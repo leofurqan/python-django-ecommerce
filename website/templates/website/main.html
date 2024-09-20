@@ -8,7 +8,7 @@
     <meta name="keywords" content="Ogani, unica, creative, html" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Ogani | Template</title>
+    <title>{{settings.site_title}}</title>
 
     <!-- Google Font -->
     <link
@@ -169,13 +169,17 @@
         <div class="row">
           <div class="col-lg-3">
             <div class="header__logo">
-              <a href="{% url 'website-home' %}"><img src="img/logo.png" alt="" /></a>
+              <a href="{% url 'website-home' %}"
+                ><img src="img/logo.png" alt=""
+              /></a>
             </div>
           </div>
           <div class="col-lg-6">
             <nav class="header__menu">
               <ul>
-                <li class="active"><a href="{% url 'website-home' %}">Home</a></li>
+                <li class="active">
+                  <a href="{% url 'website-home' %}">Home</a>
+                </li>
                 <li><a href="{% url 'website-shop' %}">Shop</a></li>
                 <li><a href="{% url 'website-about' %}">About</a></li>
                 <li><a href="{% url 'website-blogs' %}">Blog</a></li>
@@ -217,17 +221,9 @@
                 <span>All departments</span>
               </div>
               <ul>
-                <li><a href="#">Fresh Meat</a></li>
-                <li><a href="#">Vegetables</a></li>
-                <li><a href="#">Fruit & Nut Gifts</a></li>
-                <li><a href="#">Fresh Berries</a></li>
-                <li><a href="#">Ocean Foods</a></li>
-                <li><a href="#">Butter & Eggs</a></li>
-                <li><a href="#">Fastfood</a></li>
-                <li><a href="#">Fresh Onion</a></li>
-                <li><a href="#">Papayaya & Crisps</a></li>
-                <li><a href="#">Oatmeal</a></li>
-                <li><a href="#">Fresh Bananas</a></li>
+                {% for category in categories %}
+                <li><a href="#">{{category.name}}</a></li>
+                {% endfor %}
               </ul>
             </div>
           </div>

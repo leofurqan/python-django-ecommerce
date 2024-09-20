@@ -1,7 +1,14 @@
 from django.shortcuts import render
+from . import models
+from django.http import HttpResponse
 
 def index(request):
-    return render(request, 'website/index.html')
+    context = {
+        "categories": request.data["categories"],
+        "settings": request.data["settings"]
+    }
+    
+    return render(request, 'website/index.html', context)
 
 def shop(request):
     return render(request, 'website/shop.html')
