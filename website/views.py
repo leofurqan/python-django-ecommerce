@@ -3,7 +3,11 @@ from . import models
 from django.http import HttpResponse
 
 def index(request):
+    featured_products = models.Product.objects.filter(is_featured=True, status=True)
+    trending_products = models.Product.objects.filter(is_trending=True, status=True)
     context = {
+        "featured": featured_products,
+        "trending": trending_products,
         "categories": request.data["categories"],
         "settings": request.data["settings"]
     }
