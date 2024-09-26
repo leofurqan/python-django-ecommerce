@@ -57,6 +57,31 @@
       href="{% static 'website/css/style.css' %}"
       type="text/css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    />
+    <script src="{% static 'website/js/jquery-3.3.1.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+      toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+      }
+    </script>
   </head>
   <body>
     <div id="preloder">
@@ -75,7 +100,9 @@
             <a href="#"><i class="fa fa-heart"></i> <span>1</span></a>
           </li>
           <li>
-            <a href="#"><i class="fa fa-shopping-bag"></i> <span>3</span></a>
+            <a href="#"
+              ><i class="fa fa-shopping-bag"></i> <span>{{count}}</span></a
+            >
           </li>
         </ul>
         <div class="header__cart__price">item: <span>$150.00</span></div>
@@ -195,7 +222,8 @@
                 </li>
                 <li>
                   <a href="{% url 'website-cart' %}"
-                    ><i class="fa fa-shopping-bag"></i> <span>3</span></a
+                    ><i class="fa fa-shopping-bag"></i>
+                    <span>{{count}}</span></a
                   >
                 </li>
               </ul>
@@ -210,6 +238,20 @@
     </header>
     <!-- Header Section End -->
 
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success'%}
+            <script type=text/javascript>toastr.{{ message.tags }}('{{ message }}')</script>
+        {% elif message.tags == 'info' %}
+            <script type=text/javascript>toastr.{{ message.tags }}('{{ message }}')</script>
+        {% elif message.tags == 'warning' %}
+            <script type=text/javascript>toastr.{{ message.tags }}('{{ message }}')</script>
+        {% elif message.tags == 'error' %}
+            <script type=text/javascript>toastr.{{ message.tags }}('{{ message }}')</script>
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+
     <!-- Hero Section Begin -->
     <section class="hero hero-normal">
       <div class="container">
@@ -222,7 +264,7 @@
               </div>
               <ul>
                 {% for category in categories %}
-                <li><a href="#">{{category.name}}</a></li>
+                <li><a href="/shop/{{category.id}}">{{category.name}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -230,12 +272,8 @@
           <div class="col-lg-9">
             <div class="hero__search">
               <div class="hero__search__form">
-                <form action="#">
-                  <div class="hero__search__categories">
-                    All Categories
-                    <span class="arrow_carrot-down"></span>
-                  </div>
-                  <input type="text" placeholder="What do yo u need?" />
+                <form method="GET" action="{% url 'search-products' %}">
+                  <input type="text" name="search" placeholder="What do yo u need?" />
                   <button type="submit" class="site-btn">SEARCH</button>
                 </form>
               </div>
@@ -340,7 +378,6 @@
     <!-- Footer Section End -->
 
     <!-- Js Plugins -->
-    <script src="{% static 'website/js/jquery-3.3.1.min.js' %}"></script>
     <script src="{% static 'website/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'website/js/jquery.nice-select.min.js' %}"></script>
     <script src="{% static 'website/js/jquery-ui.min.js' %}"></script>

@@ -217,7 +217,7 @@
             </div>
             <div class="col-lg-4 col-md-4">
               <div class="filter__found">
-                <h6><span>16</span> Products found</h6>
+                <h6><span>{{products.count}}</span> Products found</h6>
               </div>
             </div>
             <div class="col-lg-4 col-md-3">
@@ -229,7 +229,7 @@
           </div>
         </div>
         <div class="row">
-          {% for product in products %}
+          {% if products %} {% for product in products %}
           <div class="col-lg-4 col-md-6 col-sm-6">
             <div class="product__item">
               <div
@@ -254,7 +254,9 @@
               </div>
             </div>
           </div>
-          {% endfor %}
+          {% endfor %} {% else %}
+          <h2>No products found.</h2>
+          {% endif %}
         </div>
         <div class="product__pagination">
           <a href="#">1</a>

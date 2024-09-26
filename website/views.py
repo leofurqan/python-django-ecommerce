@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from . import models
 from django.http import HttpResponse
+from django.contrib import messages
 
 def index(request):
     featured_products = models.Product.objects.filter(is_featured=True, status=True)
@@ -9,7 +10,8 @@ def index(request):
         "featured": featured_products,
         "trending": trending_products,
         "categories": request.data["categories"],
-        "settings": request.data["settings"]
+        "settings": request.data["settings"],
+        "count": request.data["cart_count"]
     }
     
     return render(request, 'website/index.html', context)
@@ -20,7 +22,31 @@ def shop(request):
     context = {
         "products": products,
         "categories": request.data["categories"],
-        "settings": request.data["settings"]
+        "settings": request.data["settings"],
+        "count": request.data["cart_count"]
+    }
+    return render(request, 'website/shop.html', context)
+
+def shop_category(request, category_id):
+    products = models.Product.objects.filter(category_id=category_id, status=True)
+    
+    context = {
+        "products": products,
+        "categories": request.data["categories"],
+        "settings": request.data["settings"],
+        "count": request.data["cart_count"]
+    }
+    return render(request, 'website/shop.html', context)
+
+def shop_search(request):
+    query = request.GET.get('search')
+    products = models.Product.objects.filter(name__icontains=query, status=True)
+    
+    context = {
+        "products": products,
+        "categories": request.data["categories"],
+        "settings": request.data["settings"],
+        "count": request.data["cart_count"]
     }
     return render(request, 'website/shop.html', context)
 
@@ -32,7 +58,8 @@ def detail(request, id):
         "product": product,
         "related_products": related_products,
         "categories": request.data["categories"],
-        "settings": request.data["settings"]
+        "settings": request.data["settings"],
+        "count": request.data["cart_count"]
     }
     
     return render(request, 'website/detail.html', context)
@@ -59,18 +86,23 @@ def cart(request):
     cart = get_or_create_cart(request)
     cart_items = cart.items.all()
     
-    total = 0
-    for item in cart_items:
-        total += models.CartItem.get_total_price(item)
+    if(request.data["cart_count"] > 0):
+        context = {
+            "total": total,
+            "cart_items": cart_items,
+            "categories": request.data["categories"],
+            "settings": request.data["settings"],
+            "count": request.data["cart_count"]
+        }
         
-    context = {
-        "total": total,
-        "cart_items": cart_items,
-        "categories": request.data["categories"],
-        "settings": request.data["settings"]
-    }
-    
-    return render(request, 'website/cart.html', context)
+        total = 0
+        for item in cart_items:
+            total += models.CartItem.get_total_price(item)
+        
+        return render(request, 'website/cart.html', context)
+    else:
+        messages.add_message(request, messages.ERROR, "Cart is empty!!")
+        return redirect('website-home')
 
 def add_to_cart(request, product_id):
     product = models.Product.objects.filter(id=product_id).first()
@@ -82,7 +114,15 @@ def add_to_cart(request, product_id):
         cart_item.quantity += 1
         cart_item.save()
 
+    messages.add_message(request, messages.SUCCESS, "Product added to Cart")
     return redirect('website-home')
+
+def delete_cart_item(request, item_id):
+    cart_item = models.CartItem.objects.filter(id=item_id).first()
+    cart_item.delete()
+    
+    messages.add_message(request, messages.SUCCESS, "Cart Item Deleted Successfully...")
+    return redirect('website-cart')
 
 def checkout(request):
     return render(request, 'website/checkout.html')

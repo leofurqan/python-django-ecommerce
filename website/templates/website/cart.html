@@ -51,7 +51,7 @@
                 </td>
                 <td class="shoping__cart__total">Rs. {{item.get_total_price}}</td>
                 <td class="shoping__cart__item__close">
-                  <span class="icon_close"></span>
+                  <a href="/cart/delete/{{item.id}}"><span class="icon_close"></span></a>
                 </td>
               </tr>
               {% endfor %}
