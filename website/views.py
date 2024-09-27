@@ -83,10 +83,10 @@ def get_or_create_cart(request):
     return cart
 
 def cart(request):
-    cart = get_or_create_cart(request)
-    cart_items = cart.items.all()
-    
     if(request.data["cart_count"] > 0):
+        cart = get_or_create_cart(request)
+        cart_items = cart.items.all()
+
         context = {
             "total": total,
             "cart_items": cart_items,

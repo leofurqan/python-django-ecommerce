@@ -1,4 +1,6 @@
 from .models import Setting, Categories, Cart
+from django.http import HttpResponse;
+from django.shortcuts import get_object_or_404;
 
 class GeneralMiddleware:
     def __init__(self, get_response):
@@ -9,8 +11,8 @@ class GeneralMiddleware:
         if not session_key:
             count = 0
         else:
-            cart = Cart.objects.get(session_key=session_key)
-            count = cart.items.all().count()
+            cart = Cart.objects.filter(session_key=session_key).first()
+            count = cart.items.count()
             
         data = {
             "categories": Categories.objects.all(),
