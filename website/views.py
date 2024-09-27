@@ -86,18 +86,14 @@ def cart(request):
     if(request.data["cart_count"] > 0):
         cart = get_or_create_cart(request)
         cart_items = cart.items.all()
-
+        
         context = {
-            "total": total,
+            "total": request.data["total"],
             "cart_items": cart_items,
             "categories": request.data["categories"],
             "settings": request.data["settings"],
             "count": request.data["cart_count"]
         }
-        
-        total = 0
-        for item in cart_items:
-            total += models.CartItem.get_total_price(item)
         
         return render(request, 'website/cart.html', context)
     else:
@@ -108,7 +104,7 @@ def add_to_cart(request, product_id):
     product = models.Product.objects.filter(id=product_id).first()
     cart = get_or_create_cart(request)
     
-    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product)
+    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price)
     
     if not created:
         cart_item.quantity += 1
@@ -125,4 +121,42 @@ def delete_cart_item(request, item_id):
     return redirect('website-cart')
 
 def checkout(request):
-    return render(request, 'website/checkout.html')
+    if(request.data["cart_count"] > 0):
+        cart = get_or_create_cart(request)
+        cart_items = cart.items.all()
+        
+        context = {
+            "total": request.data["total"],
+            "cart_items": cart_items,
+            "categories": request.data["categories"],
+            "settings": request.data["settings"],
+            "count": request.data["cart_count"]
+        }
+        
+        return render(request, 'website/checkout.html', context)
+    
+    else:
+        messages.add_message(request, messages.ERROR, "Cart is empty!!")
+        return redirect('website-home')
+    
+def placeOrder(request):
+    if request.method == "POST":
+       cart = get_or_create_cart(request)
+       
+       first_name = request.POST.get('first_name')
+       last_name = request.POST.get('last_name')
+       email = request.POST.get('email')
+       phone = request.POST.get('phone')
+       country = request.POST.get('country')
+       city = request.POST.get('city')
+       state = request.POST.get('state')
+       zip = request.POST.get('zip')
+       address = request.POST.get('address')
+       note = request.POST.get('note')
+       order = models.Order.objects.create(cart_id=cart.id, first_name=first_name, last_name=last_name, email=email, phone=phone, country=country, city=city, state=state, zip=zip, note=note, address=address, total=request.data["total"])
+       
+       request.session.flush() #to delete session key from session
+       
+       messages.add_message(request, messages.SUCCESS, f"Your order has been placed! Order # {order.id}")
+       return redirect('website-home')
+       
