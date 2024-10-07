@@ -105,10 +105,13 @@ def add_to_cart(request, product_id):
     cart = get_or_create_cart(request)
     quantity = int(request.POST.get("quantity", 1))
     
-    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price, quantity=quantity)
+    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price)
     
     if not created:
-        cart_item.quantity += 1
+        cart_item.quantity += quantity
+        cart_item.save()
+    else:
+        cart_item.quantity = quantity
         cart_item.save()
 
     messages.add_message(request, messages.SUCCESS, "Product added to Cart")
