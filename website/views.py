@@ -103,8 +103,9 @@ def cart(request):
 def add_to_cart(request, product_id):
     product = models.Product.objects.filter(id=product_id).first()
     cart = get_or_create_cart(request)
+    quantity = int(request.POST.get("quantity", 1))
     
-    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price)
+    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price, quantity=quantity)
     
     if not created:
         cart_item.quantity += 1
@@ -118,6 +119,23 @@ def delete_cart_item(request, item_id):
     cart_item.delete()
     
     messages.add_message(request, messages.SUCCESS, "Cart Item Deleted Successfully...")
+    return redirect('website-cart')
+
+def update_cart(request):
+    if request.method == 'POST':
+        item_ids = request.POST.getlist("cart_item_ids")
+        quantities = request.POST.getlist("quantities")
+        
+        for item_id, quantity in zip(item_ids, quantities):
+            quantity = int(quantity)
+            if quantity > 0:
+                cart_item = models.CartItem.objects.filter(id=item_id).first()
+                cart_item.quantity = quantity
+                cart_item.save()
+            else:
+                models.CartItem.objects.filter(id=item_id).delete()
+        messages.add_message(request, messages.SUCCESS, "Cart updated successfully...")
+                
     return redirect('website-cart')
 
 def checkout(request):
