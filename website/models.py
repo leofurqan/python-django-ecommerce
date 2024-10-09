@@ -7,7 +7,7 @@ class Setting(models.Model):
     favicon = models.FileField(upload_to="")
     home_banner = models.ImageField(upload_to="")
     email = models.EmailField()
-    phone = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100) 
     address = models.TextField()
     facebook = models.CharField(max_length=100)
     instagram = models.CharField(max_length=100)

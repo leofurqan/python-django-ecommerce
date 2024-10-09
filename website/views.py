@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
 from . import models
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.contrib import messages
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .serializer import CategoriesSerializer
+from rest_framework.permissions import IsAuthenticated
 
 def index(request):
     featured_products = models.Product.objects.filter(is_featured=True, status=True)
@@ -180,4 +184,51 @@ def placeOrder(request):
        
        messages.add_message(request, messages.SUCCESS, f"Your order has been placed! Order # {order.id}")
        return redirect('website-home')
-       
+   
+# API Calls
+#API's
+
+class CategoriesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        categories = models.Categories.objects.all()
+        serializer = CategoriesSerializer(categories, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = CategoriesSerializer(data=request.data)
+        if serializer.is_valid():
+            category = serializer.save()
+            return Response(serializer.data, status=201)
+        
+        return Response(serializer.errors, status=400)   
+
+class CategoriesDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, category_id):
+        try:
+            category = models.Categories.objects.get(id=category_id)
+            serializer = CategoriesSerializer(category)
+            return Response(serializer.data)
+        except models.Categories.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404)
+    
+    def put(self, request, category_id):
+        try:
+            category = models.Categories.objects.get(id=category_id)
+            serializer = CategoriesSerializer(category, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=400)
+
+        except models.Categories.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404)
+        
+    def delete(self, request, category_id):
+        try:
+            category = models.Categories.objects.get(id=category_id)
+            category.delete()
+            return Response({'message': 'Category deleted successfully'}, status=204)
+        except models.Categories.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404) 
