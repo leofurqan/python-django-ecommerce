@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializer import CategoriesSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.template import loader
+from django.core.mail import send_mail
+from django.http import HttpResponse
 
 def index(request):
     featured_products = models.Product.objects.filter(is_featured=True, status=True)
@@ -109,10 +112,11 @@ def add_to_cart(request, product_id):
     cart = get_or_create_cart(request)
     quantity = int(request.POST.get("quantity", 1))
     
-    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price)
+    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product, cost=product.cost, price=product.price, total=quantity*product.price)
     
     if not created:
         cart_item.quantity += quantity
+        cart_item.total = cart_item.quantity * cart_item.price
         cart_item.save()
     else:
         cart_item.quantity = quantity
@@ -138,6 +142,7 @@ def update_cart(request):
             if quantity > 0:
                 cart_item = models.CartItem.objects.filter(id=item_id).first()
                 cart_item.quantity = quantity
+                cart_item.total = quantity * cart_item.price
                 cart_item.save()
             else:
                 models.CartItem.objects.filter(id=item_id).delete()
@@ -167,6 +172,7 @@ def checkout(request):
 def placeOrder(request):
     if request.method == "POST":
        cart = get_or_create_cart(request)
+       cart_items = cart.items.all()
        
        first_name = request.POST.get('first_name')
        last_name = request.POST.get('last_name')
@@ -180,11 +186,21 @@ def placeOrder(request):
        note = request.POST.get('note')
        order = models.Order.objects.create(cart_id=cart.id, first_name=first_name, last_name=last_name, email=email, phone=phone, country=country, city=city, state=state, zip=zip, note=note, address=address, total=request.data["total"])
        
+       context = {
+            "order": order,
+            "cart_items": cart_items,
+            "settings": request.data["settings"],
+        }
+       
+       subject = "Order Confirmation"
+       message = loader.render_to_string('website/mail/order_confirmation.html', context)
+       send_mail(subject, message, "leofurqan12@gmail.com", [email], html_message=message)
+       
        request.session.flush() #to delete session key from session
        
        messages.add_message(request, messages.SUCCESS, f"Your order has been placed! Order # {order.id}")
        return redirect('website-home')
-   
+    
 # API Calls
 #API's
 

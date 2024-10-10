@@ -153,3 +153,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Replace with your email provider's SMTP server
+EMAIL_PORT = 465  # Common SMTP port, adjust if needed
+EMAIL_HOST_USER = 'leofurqan12@gmail.com'
+EMAIL_HOST_PASSWORD = 'aenc dhuk kvlf kmnw'
+EMAIL_USE_SSL = True  # Enable TLS for secure connection
